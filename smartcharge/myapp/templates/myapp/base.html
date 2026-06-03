@@ -1,0 +1,323 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Thanh toán trạm sạc</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- CSS tách riêng -->
+    <link rel="stylesheet" href="{% static 'css/payment.css' %}">
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title">Thanh toán trạm sạc</h1>
+      <p class="subtitle">
+        Nhấn "Bắt đầu sạc", sau đó chọn số tiền. Hệ thống sẽ hiển thị mã QR và
+        đếm ngược thời gian thanh toán.
+      </p>
+
+      <!-- Nút bắt đầu luồng sạc -->
+      <button id="start-btn" class="start-btn">Bắt đầu sạc</button>
+
+      <!-- Khu vực chọn số tiền (ẩn cho đến khi bấm Bắt đầu sạc) -->
+      <div id="amount-section" class="amount-section">
+        <div class="btn-group">
+          <button class="amount-btn" data-amount="10000">10.000₫</button>
+          <button class="amount-btn" data-amount="20000">20.000₫</button>
+          <button class="amount-btn" data-amount="30000">30.000₫</button>
+          <button class="amount-btn" data-amount="40000">40.000₫</button>
+        </div>
+      </div>
+
+      <!-- Khung hiển thị QR -->
+      <div class="qr-card" id="qr-card">
+        <div id="qr-empty" class="qr-empty">
+          Nhấn "Bắt đầu sạc" để chọn số tiền và hiển thị mã QR.
+        </div>
+
+        <div id="qr-content" style="display: none">
+          <p class="qr-title">
+            Mã QR thanh toán:
+            <span class="qr-amount" id="qr-amount-text"></span>
+          </p>
+          <div class="qr-wrapper">
+            <img id="qr-img" class="qr-img" src="" alt="QR thanh toán" />
+          </div>
+          <p class="qr-hint">
+            Mở app ngân hàng / ví điện tử và quét mã QR này.
+          </p>
+        </div>
+
+        <p id="countdown" class="countdown" style="display: none"></p>
+      </div>
+    </div>
+
+    <script>
+      // Map số tiền -> URL hình QR (static/img)
+      const qrMap = {
+        10000: "{% static 'img/qr_10k.png' %}",
+        20000: "{% static 'img/qr_20k.png' %}",
+        30000: "{% static 'img/qr_30k.png' %}",
+        40000: "{% static 'img/qr_40k.png' %}",
+      };
+
+      const buttons = document.querySelectorAll(".amount-btn");
+      const qrImg = document.getElementById("qr-img");
+      const qrAmountText = document.getElementById("qr-amount-text");
+      const qrContent = document.getElementById("qr-content");
+      const qrEmpty = document.getElementById("qr-empty");
+      const startBtn = document.getElementById("start-btn");
+      const amountSection = document.getElementById("amount-section");
+      const countdownEl = document.getElementById("countdown");
+      const qrCard = document.getElementById("qr-card");   // <--- THÊM DÒNG NÀY
+      // Thanh trạng thái (gắn cuối container)
+      const statusBar = document.createElement("p");
+      statusBar.style.marginTop = "8px";
+      statusBar.style.fontSize = "0.9rem";
+      statusBar.style.display = "none";
+      statusBar.id = "status-bar";
+      document.querySelector(".container").appendChild(statusBar);
+
+      // Biến trạng thái & timer
+      let pollTimer = null;
+      let resetTimer = null;
+      let countdownTimer = null;
+      let hasNotifiedSuccess = false;
+      let currentBaselineId = null;
+
+      function clearAllTimers() {
+        if (pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+        if (resetTimer) {
+          clearTimeout(resetTimer);
+          resetTimer = null;
+        }
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+      }
+
+      function resetUI() {
+        clearAllTimers();
+
+        // bật lại nút + bỏ active
+        buttons.forEach((b) => {
+          b.classList.remove("active");
+          b.disabled = false;
+        });
+
+        // hiện lại khung QR cho lượt mới
+        qrCard.style.display = "block";
+
+        // reset nội dung QR
+        qrContent.style.display = "none";
+        qrEmpty.style.display = "block";
+        qrAmountText.textContent = "";
+        qrImg.src = "";
+
+        // tắt đếm ngược
+        countdownEl.style.display = "none";
+        countdownEl.textContent = "";
+
+        // tắt dòng trạng thái
+        statusBar.style.display = "none";
+        statusBar.textContent = "";
+        statusBar.style.color = "#2563eb";
+
+        hasNotifiedSuccess = false;
+        currentBaselineId = null;
+
+        // ẩn khu chọn tiền, cho phép bấm lại "Bắt đầu sạc"
+        amountSection.style.display = "none";
+        startBtn.disabled = false;
+      }
+
+      // Gọi Django để lấy baseline_id hiện tại cho amount
+      async function fetchBaseline(amount) {
+        try {
+          const res = await fetch(`/api/payment-baseline/?amount=${amount}`);
+          if (!res.ok) return null;
+          const data = await res.json();
+          if (data.ok) {
+            console.log("Baseline ID:", data.baseline_id);
+            return data.baseline_id ?? null;
+          }
+          return null;
+        } catch (err) {
+          console.error("fetchBaseline error:", err);
+          return null;
+        }
+      }
+
+      // Hỏi Django: từ baseline trở đi có giao dịch mới chưa?
+      async function checkPaymentOnce(amount) {
+        try {
+          let url = `/api/check-payment/?amount=${amount}`;
+          if (currentBaselineId !== null) {
+            url += `&baseline_id=${currentBaselineId}`;
+          }
+          const res = await fetch(url);
+          if (!res.ok) return false;
+
+          const data = await res.json();
+          console.log("check-payment result:", data);
+
+          // Nếu đã thanh toán thì show luôn trụ + cổng (nếu có)
+          if (data.paid) {
+            const s = data.session;
+            if (s && s.device_id && s.port_no != null) {
+              statusBar.textContent =
+                `✅ Bạn đã thanh toán ${amount.toLocaleString("vi-VN")}₫. ` +
+                `Trụ của bạn là ${s.device_id}, cổng ${s.port_no}.`;
+            } else {
+              statusBar.textContent =
+                `✅ Bạn đã thanh toán ${amount.toLocaleString("vi-VN")}₫. ` +
+                `Hệ thống đang xếp slot sạc cho bạn...`;
+            }
+            statusBar.style.display = "block";
+            statusBar.style.color = "#059669";
+            amountSection.style.display = "none";   // ẩn dãy nút 10k/20k/...
+            qrCard.style.display = "none";          // ẩn khung QR
+            buttons.forEach((b) => (b.disabled = true));  // khóa luôn nút (dù bị ẩn)
+          }
+
+          return data.paid === true;
+        } catch (err) {
+          console.error("checkPayment error:", err);
+          return false;
+        }
+      }
+
+      // Đếm ngược thời gian thanh toán
+      function startCountdown(totalSeconds) {
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+
+        let remaining = totalSeconds;
+        countdownEl.style.display = "block";
+        countdownEl.textContent = `Thời gian còn lại: ${remaining}s`;
+
+        countdownTimer = setInterval(() => {
+          remaining -= 1;
+          if (remaining <= 0) {
+            clearInterval(countdownTimer);
+            countdownTimer = null;
+            countdownEl.textContent = "Đã hết thời gian thanh toán";
+
+            if (!hasNotifiedSuccess) {
+              alert(
+                "Đã hết thời gian thanh toán. Vui lòng nhấn 'Bắt đầu sạc' để thực hiện lại."
+              );
+              resetUI();
+            }
+          } else {
+            countdownEl.textContent = `Thời gian còn lại: ${remaining}s`;
+          }
+        }, 1000);
+      }
+
+      function startCheckingPayment(amount) {
+        if (pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+        if (resetTimer) {
+          clearTimeout(resetTimer);
+          resetTimer = null;
+        }
+
+        hasNotifiedSuccess = false;
+
+        const POLL_INTERVAL_MS = 3000; // 3 giây hỏi 1 lần
+        const MAX_DURATION_MS = 60000; // chờ tối đa 60 giây
+        const MAX_ATTEMPTS = Math.floor(MAX_DURATION_MS / POLL_INTERVAL_MS);
+
+        let attempts = 0;
+
+        statusBar.textContent = "";
+        statusBar.style.display = "block";
+        statusBar.style.color = "#2563eb";
+
+        pollTimer = setInterval(async () => {
+          attempts++;
+
+          if (hasNotifiedSuccess) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+            return;
+          }
+
+          const paid = await checkPaymentOnce(amount);
+
+          if (paid) {
+            hasNotifiedSuccess = true;
+            clearAllTimers(); // dừng đếm ngược + poll
+
+            // KHÔNG ghi đè lại statusBar.textContent nữa
+            statusBar.style.display = "block";
+            statusBar.style.color = "#059669";
+
+            // Sau 20 giây tự quay lại trang đầu & tắt QR
+            resetTimer = setTimeout(() => {
+              resetUI();
+            }, 20000);
+          } else if (attempts >= MAX_ATTEMPTS) {
+            // Hết lượt poll (dự phòng) – countdown sẽ xử lý reset
+            clearInterval(pollTimer);
+            pollTimer = null;
+
+            if (!hasNotifiedSuccess) {
+              statusBar.textContent = "";
+              statusBar.style.color = "#b91c1c";
+            }
+          }
+        }, POLL_INTERVAL_MS);
+      }
+
+      // Khi bấm nút "Bắt đầu sạc"
+      startBtn.addEventListener("click", () => {
+        // về trạng thái sạch (nhưng vẫn giữ nút start đang disable & hiện chọn tiền)
+        resetUI();
+        startBtn.disabled = true;
+        amountSection.style.display = "block";
+        qrEmpty.textContent =
+          "Chọn số tiền, hệ thống sẽ hiển thị mã QR và bắt đầu đếm ngược.";
+      });
+
+      // Khi bấm nút số tiền
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          buttons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          const amount = parseInt(btn.dataset.amount, 10);
+          const fileUrl = qrMap[amount];
+
+          if (!fileUrl) return;
+
+          // Cập nhật UI QR
+          qrImg.src = fileUrl;
+          qrAmountText.textContent = amount.toLocaleString("vi-VN") + "₫";
+          qrEmpty.style.display = "none";
+          qrContent.style.display = "block";
+
+          // Lấy baseline trước khi chờ thanh toán
+          currentBaselineId = await fetchBaseline(amount);
+
+          // Bắt đầu đếm ngược & check thanh toán
+          startCountdown(60);
+          startCheckingPayment(amount);
+        });
+      });
+
+      // Khi mới load trang, đảm bảo ở trạng thái "trang đầu"
+      resetUI();
+    </script>
+  </body>
+</html>

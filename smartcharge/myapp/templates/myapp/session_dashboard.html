@@ -1,0 +1,36 @@
+{% extends "myapp/base.html" %}
+
+{% block content %}
+<div class="container" style="margin-top: 2rem;">
+  <h2>Danh sách phiên sạc (Charging Sessions)</h2>
+
+  <table border="1" cellpadding="6" cellspacing="0">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Device ID</th>
+        <th>Port</th>
+        <th>Amount (VND)</th>
+        <th>Status</th>
+        <th>Created at</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sessions %}
+      <tr>
+        <td>{{ s.id }}</td>
+        <td>{{ s.device_id_str }}</td>
+        <td>{{ s.port_no }}</td>
+        <td>{{ s.amount_vnd }}</td>
+        <td>{{ s.status }}</td>
+        <td>{{ s.created_at }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">Chưa có phiên sạc nào.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
