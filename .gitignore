@@ -1,4 +1,4 @@
-﻿# Ignore KiCad temp and build files
+# Ignore KiCad temp and build files
 *.kicad_prl
 *.kicad_pcb-bak
 *.kicad_pcb~
@@ -9,3 +9,13 @@
 *.bak
 .DS_Store
 Thumbs.db
+
+build/
+*.o
+*.elf
+*.bin
+*.map
+*.log
+sdkconfig
+sdkconfig.old
+build
