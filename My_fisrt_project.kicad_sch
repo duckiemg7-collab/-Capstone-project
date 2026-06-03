@@ -1,0 +1,290 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "baf88647-2292-4aa2-b02f-ed6c903e5064")
+	(paper "A4")
+	(lib_symbols)
+	(sheet
+		(at 105.41 57.15)
+		(size 29.21 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "0a57e685-801d-4065-8ca7-effd8bdf720c")
+		(property "Sheetname" "WCS1800"
+			(at 105.41 56.4384 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "WCS1800.kicad_sch"
+			(at 105.41 83.1346 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "My_fisrt_project"
+				(path "/baf88647-2292-4aa2-b02f-ed6c903e5064"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 140.97 57.15)
+		(size 29.21 26.67)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "37e509c1-d942-40de-91eb-3264fff470ee")
+		(property "Sheetname" "ZMPT101B"
+			(at 140.97 56.4384 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "ZMPT101B.kicad_sch"
+			(at 140.97 84.4046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "My_fisrt_project"
+				(path "/baf88647-2292-4aa2-b02f-ed6c903e5064"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 179.07 58.42)
+		(size 26.67 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "3e428190-7fee-4e01-af47-a3317a59fe5a")
+		(property "Sheetname" "mcu"
+			(at 179.07 57.7084 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "mcu.kicad_sch"
+			(at 179.07 84.4046 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "My_fisrt_project"
+				(path "/baf88647-2292-4aa2-b02f-ed6c903e5064"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 180.34 96.52)
+		(size 25.4 24.13)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "4ae2b7fa-3582-4ae0-ab3f-412ae3649582")
+		(property "Sheetname" "LCD_ILI9341"
+			(at 180.34 95.8084 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "LCD_ILI9341.kicad_sch"
+			(at 180.34 121.2346 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "My_fisrt_project"
+				(path "/baf88647-2292-4aa2-b02f-ed6c903e5064"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 143.51 96.52)
+		(size 27.94 24.13)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "dbf162f0-1bf4-40b3-9a71-79df8a6c6d54")
+		(property "Sheetname" "IO_RELAY"
+			(at 143.51 95.8084 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "IO_RELAY.kicad_sch"
+			(at 143.51 121.2346 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "My_fisrt_project"
+				(path "/baf88647-2292-4aa2-b02f-ed6c903e5064"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 106.68 95.25)
+		(size 27.94 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "ef0d1f5b-7f56-4e0c-8243-8bef7b97189b")
+		(property "Sheetname" "nguon"
+			(at 106.68 94.5384 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "nguon.kicad_sch"
+			(at 106.68 121.2346 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "My_fisrt_project"
+				(path "/baf88647-2292-4aa2-b02f-ed6c903e5064"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)
